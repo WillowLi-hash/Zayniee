@@ -64,6 +64,8 @@
             z-index: 10;
             text-align: center;
             border: 1px solid #fff;
+            max-height: 90vh;
+            overflow-y: auto;
         }
 
         /* Profile Section */
@@ -186,6 +188,53 @@
             border-radius: 10px;
         }
 
+        /* Chinese Tutor Section */
+        .tutor-section {
+            margin-top: 25px;
+            border-top: 1px solid #dbebf0;
+            padding-top: 20px;
+            text-align: left;
+        }
+
+        .tutor-header {
+            font-size: 0.8rem;
+            color: var(--deep-blue);
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .tutor-card {
+            background: #f8fbfc;
+            border-radius: 12px;
+            padding: 15px;
+            font-size: 0.9rem;
+            color: #34495e;
+            border-left: 3px solid var(--accent-blue);
+            min-height: 60px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            margin-bottom: 10px;
+        }
+
+        .tutor-btn {
+            background: var(--deep-blue);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            width: 100%;
+            transition: background 0.3s;
+        }
+
+        .tutor-btn:hover {
+            background: var(--accent-blue);
+        }
+
         .fade-in {
             animation: fadeIn 0.5s ease-in;
         }
@@ -231,11 +280,19 @@
         <div class="chat-box">
             <span id="messageText">"Efficiency is key. Shall we begin?"</span>
         </div>
+
+        <!-- Chinese Tutor Section -->
+        <div class="tutor-section">
+            <div class="tutor-header">中文辅导 (Chinese Tutor)</div>
+            <div id="tutorCard" class="tutor-card">
+                <strong>Zayne:</strong> "Tap below to learn a study phrase."
+            </div>
+            <button class="tutor-btn" onclick="nextLesson()">Next Lesson</button>
+        </div>
     </div>
 
     <script>
         // --- SAFE LOCAL STORAGE WRAPPER ---
-        // This prevents the app from crashing in sandboxed online editors
         function getStorage(key) {
             try { return localStorage.getItem(key); } catch (e) { return null; }
         }
@@ -414,6 +471,30 @@
                 chatBox.classList.add('fade-in');
                 chatBox.style.opacity = 1;
             }, 200);
+        }
+
+        // --- Chinese Tutor Logic ---
+        const zayneLessons = [
+            { pinyin: "zhuān zhù", hanzi: "专注", meaning: "Focus", example: "请专注学习。 (Please focus on studying.)" },
+            { pinyin: "rèn zhēn", hanzi: "认真", meaning: "Diligent", example: "你很认真。 (You are very diligent.)" },
+            { pinyin: "xīn kǔ", hanzi: "辛苦", meaning: "Hard work", example: "辛苦了。 (Thanks for your hard work.)" },
+            { pinyin: "jiā yóu", hanzi: "加油", meaning: "Keep going!", example: "加油，你可以的。 (Keep going, you can do it!)" },
+            { pinyin: "xiū xi", hanzi: "休息", meaning: "Rest", example: "该休息了。 (It's time to rest.)" }
+        ];
+
+        let currentLessonIndex = 0;
+
+        function nextLesson() {
+            const lesson = zayneLessons[currentLessonIndex];
+            const card = document.getElementById('tutorCard');
+            
+            card.innerHTML = `
+                <div style="margin-bottom: 5px;"><strong>${lesson.hanzi}</strong> <span style="color:#7f8c8d">(${lesson.pinyin})</span></div>
+                <div style="font-weight:bold; color:var(--deep-blue)">${lesson.meaning}</div>
+                <div style="margin-top:8px; font-style:italic; font-size:0.85rem;">"${lesson.example}"</div>
+            `;
+            
+            currentLessonIndex = (currentLessonIndex + 1) % zayneLessons.length;
         }
 
         // Initialize

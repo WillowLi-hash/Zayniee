@@ -390,12 +390,21 @@
     const msg = aiInput.value.trim();
     if (!msg) return;
     
-    aiChatHistory.innerHTML += `<div class="ai-msg-user">${msg}</div>`;
-    aiInput.value = ''; 
+    // Add user message to chat
+    const userDiv = document.createElement('div');
+    userDiv.className = 'ai-msg-user';
+    userDiv.textContent = msg;
+    aiChatHistory.appendChild(userDiv);
+    
+    aiInput.value = '';
     aiChatHistory.scrollTop = aiChatHistory.scrollHeight;
     
-    const loadingId = 'ai-loading-' + Date.now();
-    aiChatHistory.innerHTML += `<div id="${loadingId}" class="ai-msg-zayne">Zayne is thinking...</div>`;
+    // Show loading indicator
+    const loadingDiv = document.createElement('div');
+    loadingDiv.id = 'ai-loading';
+    loadingDiv.className = 'ai-msg-zayne';
+    loadingDiv.textContent = 'Zayne is thinking...';
+    aiChatHistory.appendChild(loadingDiv);
     aiSendBtn.disabled = true;
     
     try {
@@ -405,62 +414,33 @@
             body: JSON.stringify({ message: msg })
         });
         
-        // SHOW EXACT STATUS CODE IN CHAT
-        document.getElementById(loadingId).textContent = `Status: ${response.status}`;
+        loadingDiv.textContent = 'Status: ' + response.status;
         
         if (!response.ok) {
             const errText = await response.text();
-            throw new Error(`${response.status}: ${errText}`);
+            throw new Error(response.status + ': ' + errText);
         }
         
         const data = await response.json();
-        console.log('RAW AI RESPONSE:', JSON.stringify(data));
         
-        if (!data.choices?.[0]?.message?.content) {
-            throw new Error('AI returned empty response');
+        if (!data.choices || !data.choices[0] || !data.choices[0].message || !data.choices[0].message.content) {
+            throw new Error('Empty AI response');
         }
         
-        document.getElementById(loadingId).remove();
-        aiChatHistory.innerHTML += `<div class="ai-msg-zayne">${data.choices[0].message.content}</div>`;
+        loadingDiv.remove();
+        
+        const replyDiv = document.createElement('div');
+        replyDiv.className = 'ai-msg-zayne';
+        replyDiv.textContent = data.choices[0].message.content;
+        aiChatHistory.appendChild(replyDiv);
         aiChatHistory.scrollTop = aiChatHistory.scrollHeight;
         
     } catch (error) {
-        console.error('FULL ERROR:', error);
-        document.getElementById(loadingId).textContent = `ERROR: ${error.message}`;
+        loadingDiv.textContent = 'ERROR: ' + error.message;
     } finally {
         aiSendBtn.disabled = false;
     }
 }
-            
-            // Add user message
-            aiChatHistory.innerHTML += `<div class="ai-msg-user">${msg}</div>`;
-            aiInput.value = ''; aiChatHistory.scrollTop = aiChatHistory.scrollHeight;
-            
-            // Show typing indicator
-            const loadingId = 'ai-loading-' + Date.now();
-            aiChatHistory.innerHTML += `<div id="${loadingId}" class="ai-msg-zayne">Zayne is thinking...</div>`;
-            aiSendBtn.disabled = true;
-            
-            try {
-                const response = await fetch(WORKER_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ message: msg })
-                });
-                
-                const data = await response.json();
-                document.getElementById(loadingId).remove();
-                
-                const reply = data.choices[0].message.content;
-                aiChatHistory.innerHTML += `<div class="ai-msg-zayne">${reply}</div>`;
-                aiChatHistory.scrollTop = aiChatHistory.scrollHeight;
-                
-            } catch (error) {
-                document.getElementById(loadingId).textContent = "Connection error. Try again.";
-            } finally {
-                aiSendBtn.disabled = false;
-            }
-        }
 
         aiInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendAiMessage(); });
 
